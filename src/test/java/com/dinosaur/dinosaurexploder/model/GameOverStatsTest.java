@@ -7,6 +7,7 @@ package com.dinosaur.dinosaurexploder.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class GameOverStatsTest {
@@ -23,5 +24,37 @@ class GameOverStatsTest {
     GameOverStats stats = new GameOverStats(50, 70, 2, 9);
 
     assertEquals("0m 09s", stats.formatElapsedTime());
+  }
+
+  @Test
+  @DisplayName("Zero seconds elapsed should be formatted as 0m 00s")
+  void shouldHandleZeroElapsedTime() {
+    GameOverStats stats = new GameOverStats(0, 0, 1, 0);
+
+    assertEquals("0m 00s", stats.formatElapsedTime());
+  }
+
+  @Test
+  @DisplayName("3600 seconds elapsed should be formatted in minutes as 60m 00s")
+  void shouldFormatOneHourElapsedInMinutes() {
+    GameOverStats stats = new GameOverStats(70, 70, 5, 3600);
+
+    assertEquals("60m 00s", stats.formatElapsedTime());
+  }
+
+  @Test
+  @DisplayName("59 seconds elapsed should be formatted as 0m 59s")
+  void shouldHandleSecondsBelowOneMinute() {
+    GameOverStats stats = new GameOverStats(70, 70, 5, 59);
+
+    assertEquals("0m 59s", stats.formatElapsedTime());
+  }
+
+  @Test
+  @DisplayName("60 seconds elapsed should be formatted as 1m 00s")
+  void shouldFormatSixtySecondsAsOneMinute() {
+    GameOverStats stats = new GameOverStats(70, 70, 5, 60);
+
+    assertEquals("1m 00s", stats.formatElapsedTime());
   }
 }
