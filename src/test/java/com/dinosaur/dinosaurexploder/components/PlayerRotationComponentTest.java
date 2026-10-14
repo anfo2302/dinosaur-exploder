@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-package com.dinosaur.dinosaurexploder.model;
+package com.dinosaur.dinosaurexploder.components;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.dinosaur.dinosaurexploder.components.PlayerRotationComponent;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.Test;
 
