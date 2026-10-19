@@ -11,21 +11,29 @@ import static org.mockito.Mockito.when;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /** Tests the heat indicator's width and colour at heat thresholds and endpoints. */
 class WeaponHeatComponentTest {
 
+  private PlayerComponent player;
+  private Rectangle fill;
+  private WeaponHeatComponent component;
+
+  @BeforeEach
+  void setUp() {
+    player = mock(PlayerComponent.class);
+    fill = new Rectangle();
+    component = new WeaponHeatComponent(fill, player);
+  }
+
   /** Verifies that the indicator is yellow and has width 50 at the 50% heat threshold. */
   @Test
   @DisplayName("50% heat should set the indicator to yellow with width 50")
   void shouldSetHalfHeatAsYellowWithHalfWidth() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(50.0);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -40,11 +48,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("49.9% heat should set the indicator to lime green with width 49.9")
   void shouldSetJustBelowHalfHeatAsLimeGreenWithJustBelowHalfWidth() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(49.9);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -56,11 +60,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("0% heat should set the indicator to lime green with width 0")
   void shouldSetZeroHeatAsLimeGreenWithZeroWidth() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(0.0);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -72,11 +72,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("75% heat should set the indicator to orange with width 75")
   void shouldSet75PercentHeatAsOrangeWith75Width() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(75.0);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -91,11 +87,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("74.9% heat should set the indicator to yellow with width 74.9")
   void shouldSetJustBelow75PercentHeatAsYellowWithJustBelow75Width() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(74.9);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -107,11 +99,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("90% heat should set the indicator to red with width 90")
   void shouldSet90PercentHeatAsRedWith90Width() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(90.0);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -126,11 +114,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("89.9% heat should set the indicator to orange with width 89.9")
   void shouldSetJustBelow90PercentHeatAsOrangeWithJustBelow90Width() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(89.9);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
@@ -142,11 +126,7 @@ class WeaponHeatComponentTest {
   @Test
   @DisplayName("100% heat should set the indicator to red with width 100")
   void shouldSet100PercentHeatAsRedWith100Width() {
-    PlayerComponent player = mock(PlayerComponent.class);
     when(player.getWeaponHeatPercentage()).thenReturn(100.0);
-
-    Rectangle fill = new Rectangle();
-    WeaponHeatComponent component = new WeaponHeatComponent(fill, player);
 
     component.onUpdate(0.0);
 
