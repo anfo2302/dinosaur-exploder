@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2026 jvondermarck
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.dinosaur.dinosaurexploder.model;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -13,97 +18,97 @@ import org.junit.jupiter.api.Test;
 
 class GameDataTest {
 
-    @AfterEach
-    void resetGameData() {
-        GameData.setSelectedDifficulty(GameMode.NORMAL);
-        GameData.setSelectedSpecialty(SpecialtyManager.NULL_SPECIALTY);
-        GameData.setSelectedShip(1);
-        GameData.setSelectedWeapon(1);
-    }
+  @AfterEach
+  void resetGameData() {
+    GameData.setSelectedDifficulty(GameMode.NORMAL);
+    GameData.setSelectedSpecialty(SpecialtyManager.NULL_SPECIALTY);
+    GameData.setSelectedShip(1);
+    GameData.setSelectedWeapon(1);
+  }
 
-    @Test
-    void selectedDifficultyCanBeChanged() {
-        GameData.setSelectedDifficulty(GameMode.EXPERT);
-        assertEquals(GameMode.EXPERT, GameData.getSelectedDifficulty());
-    }
+  @Test
+  void selectedDifficultyCanBeChanged() {
+    GameData.setSelectedDifficulty(GameMode.EXPERT);
+    assertEquals(GameMode.EXPERT, GameData.getSelectedDifficulty());
+  }
 
-    @Test
-    void selectedSpecialtyCanBeChanged() {
-        Specialty specialty = SpecialtyManager.NULL_SPECIALTY;
-        GameData.setSelectedSpecialty(specialty);
-        assertSame(specialty, GameData.getSelectedSpecialty());
-    }
+  @Test
+  void selectedSpecialtyCanBeChanged() {
+    Specialty specialty = SpecialtyManager.NULL_SPECIALTY;
+    GameData.setSelectedSpecialty(specialty);
+    assertSame(specialty, GameData.getSelectedSpecialty());
+  }
 
-    @Test
-    void shipOneCanBeSelected() {
-        GameData.setSelectedShip(1);
-        assertEquals(1, GameData.getSelectedShip());
-    }
+  @Test
+  void shipOneCanBeSelected() {
+    GameData.setSelectedShip(1);
+    assertEquals(1, GameData.getSelectedShip());
+  }
 
-    @Test
-    void weaponOneCanBeSelected() {
-        GameData.setSelectedWeapon(1);
-        assertEquals(1, GameData.getSelectedWeapon());
-    }
+  @Test
+  void weaponOneCanBeSelected() {
+    GameData.setSelectedWeapon(1);
+    assertEquals(1, GameData.getSelectedWeapon());
+  }
 
-    @Test
-    void shipOneIsUnlocked() {
-        assertTrue(GameData.checkUnlockedShip(1));
-    }
+  @Test
+  void shipOneIsUnlocked() {
+    assertTrue(GameData.checkUnlockedShip(1));
+  }
 
-    @Test
-    void weaponOneIsUnlocked() {
-        assertTrue(GameData.checkUnlockedWeapon(1));
-    }
+  @Test
+  void weaponOneIsUnlocked() {
+    assertTrue(GameData.checkUnlockedWeapon(1));
+  }
 
-    @Test
-    void unknownShipIdIsCurrentlyTreatedAsUnlocked() {
-        assertTrue(GameData.checkUnlockedShip(999));
-    }
+  @Test
+  void unknownShipIdIsCurrentlyTreatedAsUnlocked() {
+    assertTrue(GameData.checkUnlockedShip(999));
+  }
 
-    @Test
-    void unknownWeaponIdIsCurrentlyTreatedAsUnlocked() {
-        assertTrue(GameData.checkUnlockedWeapon(999));
-    }
+  @Test
+  void unknownWeaponIdIsCurrentlyTreatedAsUnlocked() {
+    assertTrue(GameData.checkUnlockedWeapon(999));
+  }
 
-    @Test
-    void maxHighScoreIsAtLeastAsHighAsEachModeScore() {
-        int maxScore = GameData.getMaxHighScore();
-        int normalScore = GameData.getHighScore(GameMode.NORMAL);
-        int expertScore = GameData.getHighScore(GameMode.EXPERT);
+  @Test
+  void maxHighScoreIsAtLeastAsHighAsEachModeScore() {
+    int maxScore = GameData.getMaxHighScore();
+    int normalScore = GameData.getHighScore(GameMode.NORMAL);
+    int expertScore = GameData.getHighScore(GameMode.EXPERT);
 
-        assertTrue(maxScore >= normalScore);
-        assertTrue(maxScore >= expertScore);
-    }
+    assertTrue(maxScore >= normalScore);
+    assertTrue(maxScore >= expertScore);
+  }
 
-    @Test
-    void highScoreMatchesSelectedDifficulty() {
-        GameData.setSelectedDifficulty(GameMode.EXPERT);
+  @Test
+  void highScoreMatchesSelectedDifficulty() {
+    GameData.setSelectedDifficulty(GameMode.EXPERT);
 
-        int expectedScore = GameData.getHighScore(GameMode.EXPERT);
-        int actualScore = GameData.getHighScore();
+    int expectedScore = GameData.getHighScore(GameMode.EXPERT);
+    int actualScore = GameData.getHighScore();
 
-        assertEquals(expectedScore, actualScore);
-    }
+    assertEquals(expectedScore, actualScore);
+  }
 
-    @Test
-    void highScoreCanBeReadForBothGameModes() {
-        assertDoesNotThrow(() -> GameData.getHighScore(GameMode.NORMAL));
-        assertDoesNotThrow(() -> GameData.getHighScore(GameMode.EXPERT));
-    }
+  @Test
+  void highScoreCanBeReadForBothGameModes() {
+    assertDoesNotThrow(() -> GameData.getHighScore(GameMode.NORMAL));
+    assertDoesNotThrow(() -> GameData.getHighScore(GameMode.EXPERT));
+  }
 
-    @Test
-    void totalCoinsCanBeRead() {
-        assertDoesNotThrow(() -> GameData.getTotalCoins());
-    }
+  @Test
+  void totalCoinsCanBeRead() {
+    assertDoesNotThrow(() -> GameData.getTotalCoins());
+  }
 
-    @Test
-    void lockedShipCheckDoesNotThrow() {
-        assertDoesNotThrow(() -> GameData.checkUnlockedShip(8));
-    }
+  @Test
+  void lockedShipCheckDoesNotThrow() {
+    assertDoesNotThrow(() -> GameData.checkUnlockedShip(8));
+  }
 
-    @Test
-    void lockedWeaponCheckDoesNotThrow() {
-        assertDoesNotThrow(() -> GameData.checkUnlockedWeapon(3));
-    }
+  @Test
+  void lockedWeaponCheckDoesNotThrow() {
+    assertDoesNotThrow(() -> GameData.checkUnlockedWeapon(3));
+  }
 }
