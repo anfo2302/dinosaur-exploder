@@ -6,10 +6,18 @@
 package com.dinosaur.dinosaurexploder.components;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.input.Input;
 import javafx.geometry.Point2D;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 /** Tests direction angle calculations and the application of player and ally rotations. */
 class PlayerRotationComponentTest {
@@ -130,5 +138,63 @@ class PlayerRotationComponentTest {
     Point2D mouse = new Point2D(0, 0);
 
     assertEquals(0.0, PlayerRotationComponent.calculateAngle(player, mouse), 0.001);
+  }
+
+  /** Verifies that a mouse position right of the player produces a 90-degree sprite rotation. */
+  @Test
+  @DisplayName("Mouse right of player should set player rotation to 90 degrees without an ally")
+  void shouldRotatePlayerTowardsMouseWithoutAlly() {
+    Input input = mock(Input.class);
+    PlayerComponent player = mock(PlayerComponent.class);
+    when(player.getAlly()).thenReturn(null);
+
+    Entity playerEntity = new Entity();
+    playerEntity.setPosition(100, 50);
+    playerEntity.addComponent(player);
+
+    PlayerRotationComponent rotation = new PlayerRotationComponent();
+    playerEntity.addComponent(rotation);
+
+    Point2D mousePosition = playerEntity.getCenter().add(100, 0);
+    when(input.getMousePositionWorld()).thenReturn(mousePosition);
+
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      fxgl.when(FXGL::getInput).thenReturn(input);
+
+      rotation.onUpdate(0.0);
+
+      assertEquals(90.0, playerEntity.getRotation(), 0.001);
+    }
+  }
+
+  /** Verifies that both the player and its ally receive the adjusted rotation. */
+  @Test
+  @DisplayName("Mouse below player should set player and ally rotation to 180 degrees")
+  void shouldRotatePlayerAndAllyTowardsMouse() {
+    Input input = mock(Input.class);
+    PlayerComponent player = mock(PlayerComponent.class);
+    AllyComponent ally = mock(AllyComponent.class);
+    Entity allyEntity = mock(Entity.class);
+    when(player.getAlly()).thenReturn(ally);
+    when(ally.getEntity()).thenReturn(allyEntity);
+
+    Entity playerEntity = new Entity();
+    playerEntity.setPosition(100, 50);
+    playerEntity.addComponent(player);
+
+    PlayerRotationComponent rotation = new PlayerRotationComponent();
+    playerEntity.addComponent(rotation);
+
+    Point2D mousePosition = playerEntity.getCenter().add(0, 100);
+    when(input.getMousePositionWorld()).thenReturn(mousePosition);
+
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      fxgl.when(FXGL::getInput).thenReturn(input);
+
+      rotation.onUpdate(0.0);
+
+      assertEquals(180.0, playerEntity.getRotation(), 0.001);
+      verify(allyEntity).setRotation(180.0);
+    }
   }
 }
