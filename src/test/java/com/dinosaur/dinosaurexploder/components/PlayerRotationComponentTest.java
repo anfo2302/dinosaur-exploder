@@ -8,7 +8,6 @@ package com.dinosaur.dinosaurexploder.components;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.almasb.fxgl.dsl.FXGL;
@@ -174,7 +173,7 @@ class PlayerRotationComponentTest {
     Input input = mock(Input.class);
     PlayerComponent player = mock(PlayerComponent.class);
     AllyComponent ally = mock(AllyComponent.class);
-    Entity allyEntity = mock(Entity.class);
+    Entity allyEntity = new Entity();
     when(player.getAlly()).thenReturn(ally);
     when(ally.getEntity()).thenReturn(allyEntity);
 
@@ -194,7 +193,7 @@ class PlayerRotationComponentTest {
       rotation.onUpdate(0.0);
 
       assertEquals(180.0, playerEntity.getRotation(), 0.001);
-      verify(allyEntity).setRotation(180.0);
+      assertEquals(180.0, allyEntity.getRotation(), 0.001);
     }
   }
 }
