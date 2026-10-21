@@ -16,6 +16,7 @@ import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.dinosaur.dinosaurexploder.utils.MockGameTimer;
+import com.dinosaur.dinosaurexploder.view.DinosaurGUI;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,6 +105,118 @@ class PlayerComponentTest {
 
       assertEquals(playerEntity.getY(), PLAYER_STARTING_COORDS, 0.001);
       assertEquals(PLAYER_STARTING_COORDS - player.movementSpeed, playerEntity.getX(), 0.001);
+    }
+  }
+
+  /** Verifies that moving left to 0 X coordinate is possible. */
+  @Test
+  @DisplayName("Moving left to 0 X should work")
+  void shouldBeAbleToMoveToZeroX() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setX(player.movementSpeed);
+      player.moveLeft();
+
+      assertEquals(0, playerEntity.getX(), 0.001);
+    }
+  }
+
+  /** Verifies that moving up to 0 Y coordinate is possible. */
+  @Test
+  @DisplayName("Moving up to 0 Y should work")
+  void shouldBeAbleToMoveToZeroY() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setY(player.movementSpeed);
+      player.moveUp();
+
+      assertEquals(0, playerEntity.getY(), 0.001);
+    }
+  }
+
+  /** Verifies that moving down to max Y coordinate is possible. */
+  @Test
+  @DisplayName("Moving down to max Y should work")
+  void shouldBeAbleToMoveToMaxY() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setY(DinosaurGUI.HEIGHT - player.movementSpeed);
+      player.moveDown();
+
+      assertEquals(DinosaurGUI.HEIGHT, playerEntity.getY(), 0.001);
+    }
+  }
+
+  /** Verifies that moving right to max X coordinate is possible. */
+  @Test
+  @DisplayName("Moving right to max X should work")
+  void shouldBeAbleToMoveToMaxX() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setX(DinosaurGUI.WIDTH - player.movementSpeed);
+      player.moveRight();
+
+      assertEquals(DinosaurGUI.WIDTH, playerEntity.getX(), 0.001);
+    }
+  }
+
+  /** Verifies that moving past max X coordinate is not possible. */
+  @Test
+  @DisplayName("Moving past max X should not work")
+  void shouldNotBeAbleToMovePastMaxX() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setX(DinosaurGUI.WIDTH - player.movementSpeed + 1);
+      player.moveRight();
+
+      assertEquals(DinosaurGUI.WIDTH, playerEntity.getX(), 0.001);
+    }
+  }
+
+  /** Verifies that moving past max Y coordinate is not possible. */
+  @Test
+  @DisplayName("Moving past max Y should not work")
+  void shouldNotBeAbleToMovePastMaxY() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setY(DinosaurGUI.HEIGHT - player.movementSpeed + 1);
+      player.moveDown();
+
+      assertEquals(DinosaurGUI.HEIGHT, playerEntity.getY(), 0.001);
+    }
+  }
+
+  /** Verifies that moving below 0 X coordinate is not possible. */
+  @Test
+  @DisplayName("Moving below zero X should not work")
+  void shouldNotBeAbleToMoveBelowZeroX() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setX(player.movementSpeed - 1);
+      player.moveLeft();
+
+      assertEquals(0, playerEntity.getX(), 0.001);
+    }
+  }
+
+  /** Verifies that moving below 0 Y coordinate is not possible. */
+  @Test
+  @DisplayName("Moving below zero Y should not work")
+  void shouldNotBeAbleToMoveBelowZeroY() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      playerEntity.setY(player.movementSpeed - 1);
+      player.moveUp();
+
+      assertEquals(0, playerEntity.getY(), 0.001);
     }
   }
 }
