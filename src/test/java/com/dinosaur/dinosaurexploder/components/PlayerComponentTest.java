@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.almasb.fxgl.dsl.EntityBuilder;
@@ -46,6 +48,12 @@ class PlayerComponentTest {
     when(animationBuilder.with(any(ExpireCleanComponent.class))).thenReturn(animationBuilder);
 
     fxgl.when(FXGL::entityBuilder).thenReturn(animationBuilder);
+  }
+
+  private AllyComponent attachMockAlly() {
+    AllyComponent ally = mock(AllyComponent.class);
+    player.setAlly(ally);
+    return ally;
   }
 
   /** Verifies that moving up decreases Y by PlayerComponent.movementSpeed without changing X. */
@@ -105,6 +113,62 @@ class PlayerComponentTest {
 
       assertEquals(playerEntity.getY(), PLAYER_STARTING_COORDS, 0.001);
       assertEquals(PLAYER_STARTING_COORDS - player.movementSpeed, playerEntity.getX(), 0.001);
+    }
+  }
+
+  /** Verifies that moving up also affects an ally. */
+  @Test
+  @DisplayName("Moving up should instruct allies to move as well")
+  void shouldMoveAllyUpByMovementSpeed() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+      player.moveUp();
+
+      verify(ally).moveUp(player.movementSpeed);
+    }
+  }
+
+  /** Verifies that moving down also affects allies. */
+  @Test
+  @DisplayName("Moving down should instruct allies to move as well")
+  void shouldMoveAllyDownByMovementSpeed() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+      player.moveDown();
+
+      verify(ally).moveDown(player.movementSpeed);
+    }
+  }
+
+  /** Verifies that moving right also affects allies. */
+  @Test
+  @DisplayName("Moving right should instruct allies to move as well")
+  void shouldMoveAllyRightByMovementSpeed() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+      player.moveRight();
+
+      verify(ally).moveRight(player.movementSpeed);
+    }
+  }
+
+  /** Verifies that moving left also affects allies. */
+  @Test
+  @DisplayName("Moving left should instruct allies to move as well")
+  void shouldMoveAllyLeftByMovementSpeed() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+      player.moveLeft();
+
+      verify(ally).moveLeft(player.movementSpeed);
     }
   }
 
@@ -217,6 +281,70 @@ class PlayerComponentTest {
       player.moveUp();
 
       assertEquals(0, playerEntity.getY(), 0.001);
+    }
+  }
+
+  /** Verifies that attempting to move past max X coordinates does not move the ally. */
+  @Test
+  @DisplayName("Trying to move past max X should not affect ally")
+  void allyShouldNotBeMovedPastMaxX() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+
+      playerEntity.setX(DinosaurGUI.WIDTH - player.movementSpeed + 1);
+      player.moveRight();
+
+      verify(ally, never()).moveRight(player.movementSpeed);
+    }
+  }
+
+  /** Verifies that attempting to move past max Y coordinates does not move the ally. */
+  @Test
+  @DisplayName("Trying to move past max Y should not affect ally")
+  void allyShouldNotBeMovedPastMaxY() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+
+      playerEntity.setY(DinosaurGUI.HEIGHT - player.movementSpeed + 1);
+      player.moveDown();
+
+      verify(ally, never()).moveDown(player.movementSpeed);
+    }
+  }
+
+  /** Verifies that attempting to move below 0 Y does not move the ally. */
+  @Test
+  @DisplayName("Trying to move below 0 Y should not affect ally")
+  void allyShouldNotBeMovedBelowZeroY() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+
+      playerEntity.setY(player.movementSpeed - 1);
+      player.moveUp();
+
+      verify(ally, never()).moveUp(player.movementSpeed);
+    }
+  }
+
+  /** Verifies that attempting to move below 0 X does not move the ally. */
+  @Test
+  @DisplayName("Trying to move below 0 X should not affect ally")
+  void allyShouldNotBeMovedBelowZeroX() {
+    try (MockedStatic<FXGL> fxgl = mockStatic(FXGL.class)) {
+      stubMovementAnimation(fxgl);
+
+      AllyComponent ally = attachMockAlly();
+
+      playerEntity.setX(player.movementSpeed - 1);
+      player.moveLeft();
+
+      verify(ally, never()).moveLeft(player.movementSpeed);
     }
   }
 }
