@@ -315,7 +315,7 @@ class PlayerComponentTest {
 
       AllyComponent ally = attachMockAlly();
 
-      playerEntity.setX(DinosaurGUI.WIDTH - player.movementSpeed + 1);
+      playerEntity.setX(DinosaurGUI.WIDTH);
       player.moveRight();
 
       verify(ally, never()).moveRight(player.movementSpeed);
@@ -331,7 +331,7 @@ class PlayerComponentTest {
 
       AllyComponent ally = attachMockAlly();
 
-      playerEntity.setY(DinosaurGUI.HEIGHT - player.movementSpeed + 1);
+      playerEntity.setY(DinosaurGUI.HEIGHT);
       player.moveDown();
 
       verify(ally, never()).moveDown(player.movementSpeed);
@@ -347,7 +347,7 @@ class PlayerComponentTest {
 
       AllyComponent ally = attachMockAlly();
 
-      playerEntity.setY(player.movementSpeed - 1);
+      playerEntity.setY(0);
       player.moveUp();
 
       verify(ally, never()).moveUp(player.movementSpeed);
@@ -363,7 +363,7 @@ class PlayerComponentTest {
 
       AllyComponent ally = attachMockAlly();
 
-      playerEntity.setX(player.movementSpeed - 1);
+      playerEntity.setX(0);
       player.moveLeft();
 
       verify(ally, never()).moveLeft(player.movementSpeed);
