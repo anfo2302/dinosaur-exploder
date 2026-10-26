@@ -46,9 +46,8 @@ class PlayerComponentTest {
   private static final int PLAYER_STARTING_COORDS = 100;
 
   private static final double WEAPON_HEAT_PER_SHOT = 12.0;
-  private static final double COOLING_RATE_PER_SECOND = 30.0;
   private static final double SLOWDOWN_THRESHOLD = 90.0;
-  private static final double SLOWED_SHOT_COOLDOWN_SECONDS = 0.28;
+  private static final double SLOWED_SHOT_COOLDOWN_MILLIS = 280;
 
   @BeforeEach
   void setUp() {
@@ -119,7 +118,7 @@ class PlayerComponentTest {
 
       player.moveRight();
 
-      assertEquals(playerEntity.getY(), PLAYER_STARTING_COORDS, 0.001);
+      assertEquals(PLAYER_STARTING_COORDS, playerEntity.getY(), 0.001);
       assertEquals(PLAYER_STARTING_COORDS + player.movementSpeed, playerEntity.getX(), 0.001);
     }
   }
@@ -134,7 +133,7 @@ class PlayerComponentTest {
 
       player.moveLeft();
 
-      assertEquals(playerEntity.getY(), PLAYER_STARTING_COORDS, 0.001);
+      assertEquals(PLAYER_STARTING_COORDS, playerEntity.getY(), 0.001);
       assertEquals(PLAYER_STARTING_COORDS - player.movementSpeed, playerEntity.getX(), 0.001);
     }
   }
@@ -406,7 +405,7 @@ class PlayerComponentTest {
   @Test
   @DisplayName("Shooting at 90 heat just before cooldown expires should be blocked")
   void shouldBlockShootingAtHeatThresholdBeforeCooldown() throws Exception {
-    setWeaponHeat(90.0);
+    setWeaponHeat(SLOWDOWN_THRESHOLD);
     gameTimer.advance(Duration.millis(279));
 
     try (MockedStatic<AudioManager> audio = mockStatic(AudioManager.class);
@@ -416,7 +415,7 @@ class PlayerComponentTest {
 
       fxgl.verifyNoInteractions();
       audio.verifyNoInteractions();
-      assertEquals(90.0, player.getWeaponHeat(), 0.001);
+      assertEquals(SLOWDOWN_THRESHOLD, player.getWeaponHeat(), 0.001);
     }
   }
 
@@ -424,7 +423,7 @@ class PlayerComponentTest {
   @Test
   @DisplayName("Shooting at 89 heat should be allowed without waiting for a cooldown")
   void shouldAllowShootingAtHeat89WithoutCooldown() throws Exception {
-    setWeaponHeat(89.0);
+    setWeaponHeat(SLOWDOWN_THRESHOLD - 1);
 
     try (MockedStatic<AudioManager> audio = mockStatic(AudioManager.class);
         MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
@@ -443,8 +442,8 @@ class PlayerComponentTest {
   @DisplayName("Shooting at 90 heat after 280 ms should spawn a projectile and cap heat at 100")
   void shouldAllowShootingAtHeatThresholdWhenCooldownExpires() throws Exception {
 
-    setWeaponHeat(90.0);
-    gameTimer.advance(Duration.millis(280));
+    setWeaponHeat(SLOWDOWN_THRESHOLD);
+    gameTimer.advance(Duration.millis(SLOWED_SHOT_COOLDOWN_MILLIS));
 
     try (MockedStatic<AudioManager> audio = mockStatic(AudioManager.class);
         MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
@@ -465,8 +464,8 @@ class PlayerComponentTest {
   @Test
   @DisplayName("A successful hot shot should restart the 280 ms cooldown")
   void shouldResetCooldownAfterSuccessfulHotShot() throws Exception {
-    setWeaponHeat(90.0);
-    gameTimer.advance(Duration.millis(280));
+    setWeaponHeat(SLOWDOWN_THRESHOLD);
+    gameTimer.advance(Duration.millis(SLOWED_SHOT_COOLDOWN_MILLIS));
 
     try (MockedStatic<AudioManager> audio = mockStatic(AudioManager.class);
         MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
@@ -482,7 +481,7 @@ class PlayerComponentTest {
 
       fxgl.verify(() -> FXGLForKtKt.spawn(eq("basicProjectile"), any(SpawnData.class)), times(1));
 
-      gameTimer.advance(Duration.millis(280));
+      gameTimer.advance(Duration.millis(SLOWED_SHOT_COOLDOWN_MILLIS));
 
       // should be allowed since cooldown is done
       player.shoot();
@@ -514,8 +513,8 @@ class PlayerComponentTest {
   @DisplayName("A player shot blocked by cooldown should not make the ally shoot")
   void shouldNotMakeAllyShootWhenPlayerShotIsBlocked() throws Exception {
     AllyComponent ally = attachMockAlly();
-    setWeaponHeat(90.0);
-    gameTimer.advance(Duration.millis(279));
+    setWeaponHeat(SLOWDOWN_THRESHOLD);
+    gameTimer.advance(Duration.millis(SLOWED_SHOT_COOLDOWN_MILLIS - 1));
 
     try (MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
 
@@ -624,5 +623,39 @@ class PlayerComponentTest {
 
     assertFalse(shieldPlayer.isShieldActive());
     assertFalse(shieldPlayer.isInvincible());
+  }
+
+  /* ******************************************************
+   *   ALLY TESTS
+   ******************************************************** */
+
+  /** Verifies that an ally with remaining duration is retained. */
+  @Test
+  @DisplayName("An ally with remaining duration should remain attached")
+  void shouldRetainAllyWithRemainingDuration() {
+    AllyComponent ally = attachMockAlly();
+    Entity allyEntity = mock(Entity.class);
+    when(ally.getEntity()).thenReturn(allyEntity);
+    when(ally.getDuration()).thenReturn(1.0);
+
+    player.onUpdate(0.0);
+
+    assertSame(ally, player.getAlly());
+    verify(allyEntity, never()).removeFromWorld();
+  }
+
+  /** Verifies that an ally is removed when its duration reaches zero. */
+  @Test
+  @DisplayName("An ally with zero duration should be removed")
+  void shouldRemoveAllyWithZeroDuration() {
+    AllyComponent ally = attachMockAlly();
+    Entity allyEntity = mock(Entity.class);
+    when(ally.getEntity()).thenReturn(allyEntity);
+    when(ally.getDuration()).thenReturn(0.0);
+
+    player.onUpdate(0.0);
+
+    verify(allyEntity).removeFromWorld();
+    assertNull(player.getAlly());
   }
 }
