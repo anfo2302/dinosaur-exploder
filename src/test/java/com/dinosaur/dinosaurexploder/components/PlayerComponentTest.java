@@ -8,9 +8,11 @@ package com.dinosaur.dinosaurexploder.components;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +23,8 @@ import com.almasb.fxgl.dsl.FXGLForKtKt;
 import com.almasb.fxgl.dsl.components.ExpireCleanComponent;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.SpawnData;
+import com.almasb.fxgl.time.Timer;
+import com.almasb.fxgl.time.TimerAction;
 import com.dinosaur.dinosaurexploder.utils.AudioManager;
 import com.dinosaur.dinosaurexploder.utils.MockGameTimer;
 import com.dinosaur.dinosaurexploder.view.DinosaurGUI;
@@ -31,6 +35,7 @@ import javafx.util.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 class PlayerComponentTest {
@@ -70,9 +75,9 @@ class PlayerComponentTest {
     return ally;
   }
 
-  /* *
+  /* ******************************************************
    *   MOVEMENT TESTS
-   */
+   ******************************************************** */
 
   /** Verifies that moving up decreases Y by PlayerComponent.movementSpeed without changing X. */
   @Test
@@ -366,9 +371,9 @@ class PlayerComponentTest {
     }
   }
 
-  /* *
+  /* ******************************************************
    *   SHOOTING TESTS
-   */
+   ******************************************************** */
 
   private void stubShootingAudio(MockedStatic<AudioManager> audio) {
     AudioManager audioManager = mock(AudioManager.class);
@@ -519,5 +524,105 @@ class PlayerComponentTest {
       fxgl.verifyNoInteractions();
       verify(ally, never()).shoot();
     }
+  }
+
+  /* ******************************************************
+   *   SHIELD TESTS
+   ******************************************************** */
+
+  private PlayerComponent createPlayerWithBlinkingDisabled() {
+    PlayerComponent shieldPlayer = spy(player);
+    doNothing().when(shieldPlayer).startBlinking();
+    return shieldPlayer;
+  }
+
+  /** Verifies that activating a ready shield grants three seconds of invincibility. */
+  @Test
+  @DisplayName("Activating a ready shield should grant invincibility for three seconds")
+  void shouldActivateShieldWhenReady() {
+    // use spy to suppress blinking
+    PlayerComponent shieldPlayer = createPlayerWithBlinkingDisabled();
+
+    Timer timer = mock(Timer.class);
+
+    try (MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
+      fxgl.when(FXGLForKtKt::getGameTimer).thenReturn(timer);
+
+      shieldPlayer.activateShield();
+
+      assertTrue(shieldPlayer.isShieldActive());
+      assertTrue(shieldPlayer.isInvincible());
+      assertEquals(3.0, shieldPlayer.getShieldTimeLeft(), 0.001);
+      assertEquals(0.0, shieldPlayer.getShieldCooldownLeft(), 0.001);
+    }
+  }
+
+  /** Verifies that reactivating an active shield does not reset its remaining duration. */
+  @Test
+  @DisplayName("Reactivating an active shield should preserve its remaining duration")
+  void shouldNotRestartShieldWhileActive() throws Exception {
+    PlayerComponent shieldPlayer = createPlayerWithBlinkingDisabled();
+    Timer timer = mock(Timer.class);
+
+    try (MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
+      fxgl.when(FXGLForKtKt::getGameTimer).thenReturn(timer);
+
+      shieldPlayer.activateShield();
+
+      Field remainingTime = PlayerComponent.class.getDeclaredField("shieldTimeLeft");
+      remainingTime.setAccessible(true);
+      remainingTime.setDouble(shieldPlayer, 2.9);
+
+      shieldPlayer.activateShield();
+
+      assertEquals(2.9, shieldPlayer.getShieldTimeLeft(), 0.001);
+    }
+  }
+
+  /** Verifies that shield expiry ends protection and starts the eight-second cooldown. */
+  @Test
+  @DisplayName("Shield expiry should end invincibility and start an eight-second cooldown")
+  void shouldEndProtectionAndStartCooldownWhenShieldExpires() {
+    PlayerComponent shieldPlayer = createPlayerWithBlinkingDisabled();
+
+    Timer timer = mock(Timer.class);
+    TimerAction shieldAction = mock(TimerAction.class);
+    when(timer.runAtInterval(any(Runnable.class), eq(Duration.seconds(0.1))))
+        .thenReturn(shieldAction);
+
+    ArgumentCaptor<Runnable> callback = ArgumentCaptor.forClass(Runnable.class);
+
+    try (MockedStatic<FXGLForKtKt> fxgl = mockStatic(FXGLForKtKt.class)) {
+      fxgl.when(FXGLForKtKt::getGameTimer).thenReturn(timer);
+
+      shieldPlayer.activateShield();
+
+      verify(timer).runAtInterval(callback.capture(), eq(Duration.seconds(0.1)));
+      Runnable shieldTick = callback.getValue();
+
+      for (int i = 0; i < 30; i++) {
+        shieldTick.run();
+      }
+
+      assertFalse(shieldPlayer.isShieldActive());
+      assertFalse(shieldPlayer.isInvincible());
+      assertEquals(8.0, shieldPlayer.getShieldCooldownLeft(), 0.001);
+    }
+  }
+
+  /** Verifies that the shield cannot activate while its cooldown remains. */
+  @Test
+  @DisplayName("Shield activation during cooldown should leave the player unprotected")
+  void shouldBlockShieldActivationDuringCooldown() throws Exception {
+    PlayerComponent shieldPlayer = createPlayerWithBlinkingDisabled();
+
+    Field cooldown = PlayerComponent.class.getDeclaredField("shieldCooldownLeft");
+    cooldown.setAccessible(true);
+    cooldown.setDouble(shieldPlayer, 0.1);
+
+    shieldPlayer.activateShield();
+
+    assertFalse(shieldPlayer.isShieldActive());
+    assertFalse(shieldPlayer.isInvincible());
   }
 }
