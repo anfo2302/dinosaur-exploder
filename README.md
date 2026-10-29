@@ -9,5 +9,5 @@
 * Andreas Karl Jonas Wallgren 
 
 ## How to reproduce tests
-* `mvn clean test jacoco:report`
+* `mvn clean -Dmaven.test.failure.ignore=true jacoco:report`
 * `mvn test-compile org.pittest:pittest-maven:mutationCoverage`
