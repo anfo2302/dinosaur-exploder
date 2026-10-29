@@ -10,4 +10,4 @@
 
 ## How to reproduce tests
 * `mvn clean -Dmaven.test.failure.ignore=true jacoco:report`
-* `mvn test-compile org.pittest:pittest-maven:mutationCoverage`
+* `mvn test-compile org.pittest:pittest-maven:mutationCoverage` - <skipFailingTest>true</skipFailingTests>
